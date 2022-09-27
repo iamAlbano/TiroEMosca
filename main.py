@@ -2,6 +2,7 @@ import functools
 import tkinter as t
 from menu import Menu
 from tela import Tela
+from game import Game
 import tcp_cliente
 import tcp_server
 import sys
@@ -20,6 +21,7 @@ singleplayer = []
 multiplayer = []
 config = []
 hosting = []
+game = []
 
 def host_game():
     game_status = 'hosting'
@@ -31,7 +33,7 @@ def start_host():
     exec(open("tcp_server.py").read())
 
 def enter_game():
-    tcp_cliente.main (HOST, PORT)
+    tela.muda_tela(game)
 
 def voltar_menu():
     tela.muda_tela(tela)
@@ -63,7 +65,7 @@ singleplayer = Tela(root, 'SinglePlayer', singleplayer_options)
 multiplayer = Tela(root, 'Multiplayer', multiplayer_options)  
 config = Tela(root, 'Configurações', config_options) 
 hosting = Tela(root, "Aguardando adversário", hosting_options)
-
+game = Game(root)
 
 if __name__ == '__main__':
 
