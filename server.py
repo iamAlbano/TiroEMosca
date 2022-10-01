@@ -11,22 +11,23 @@ players = []
 
 def on_new_client(clientsocket,addr):
     # avisa os jogadores sobre ínicio do jogo e define o primeiro a jogar
-    novo_jogo = json.dumps({ "turno": clientsocket is not players[0]["client"]  if 'adversario' else 'jogador'})
+    novo_jogo = json.dumps({ "turno": 'adversario'  if clientsocket is not players[0]["client"] else 'jogador'})
     clientsocket.send(novo_jogo.encode('utf-8'))
-    print("enviado: ", novo_jogo)
+
     while True:
         try:
             data = clientsocket.recv(BUFFER_SIZE)
             if not data:
                 break
-            texto_recebido = json.loads(data)
-            print('recebido do cliente {} na porta {}: {}'.format(addr[0], addr[1],texto_recebido))
+            pacote_recebido = json.loads(data)
+            print('recebido do cliente {} na porta {}: {}'.format(addr[0], addr[1],pacote_recebido))
             
             # envia informação aos jogadores          
             for player in players:
                 if player["client"] is not clientsocket:
                     player["client"].send(data)
-            if (texto_recebido == 'bye'):
+                    
+            if ('GAME_OVER' in pacote_recebido):
                 print('vai encerrar o socket do cliente {} !'.format(addr[0]))
                 clientsocket.close() 
                 return 

@@ -4,7 +4,7 @@ from menu import Menu
 from tela import Tela
 from game import Game
 import tcp_cliente
-import tcp_server
+import server
 import sys
 import subprocess
 import socket
@@ -65,13 +65,13 @@ singleplayer = Tela(root, 'SinglePlayer', singleplayer_options)
 multiplayer = Tela(root, 'Multiplayer', multiplayer_options)  
 config = Tela(root, 'Configurações', config_options) 
 hosting = Tela(root, "Aguardando adversário", hosting_options)
-game = Game(root)
 
 if __name__ == '__main__':
 
     root.geometry("400x400")
     
-    tela = Menu(root, singleplayer, multiplayer, config)
-    tela.grid()
+    menu = Menu(root, singleplayer, multiplayer, config)
+    game = Game(menu)
+    menu.grid()
 
     root.mainloop()
