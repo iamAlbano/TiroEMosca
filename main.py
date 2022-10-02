@@ -45,9 +45,9 @@ singleplayer_options = [
     {'text': 'VS CPU', 'type': 'button', 'column':0, 'row':3, 'action':tcp_cliente.main },
 ]
 multiplayer_options = [
-    {'text': 'Escolha sua conexão', 'type': 'label', 'column':0, 'row':1 },
-    {'text': 'HOST', 'type': 'button', 'column':0, 'row':2, 'action':host_game},
-    {'text': 'CLIENT', 'type': 'button', 'column':0, 'row':3, 'action':enter_game},
+    {'text': 'Escolha sua conexão', 'type': 'label', 'column':0, 'row':0 },
+    {'text': 'Iniciar jogo', 'type': 'button', 'column':0, 'row':1, 'action':enter_game},
+    # {'text': 'HOST', 'type': 'button', 'column':0, 'row':2, 'action':host_game},
 ]
 
 hosting_options = [

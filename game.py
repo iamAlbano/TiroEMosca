@@ -24,7 +24,8 @@ class Game(t.Frame):
       self.tiros = 0
       self.moscas = 0
       self.parent = parent
-      self.layout = t.Label(self, text="Aguardando adversário...")
+      msg = t.Label(self, text="Aguardando adversário")
+      self.layout = msg
 
       try:
         t.Frame.__init__(self)
@@ -32,11 +33,52 @@ class Game(t.Frame):
         # componentes do layout
         sequencia_label = t.Label(self, text="A sua sequência é: "+self.minha_sequencia)
         adversario_label = t.Label(self, text="Seu adversário chutou: ")
-        chute_label = t.Label(self, text="Chutar sequência de três números: ")
+        mensagem = t.Label(self, text="Chutar sequência de três números: ")
         tentativa = t.Entry(self, width=40)
-        aguardando = t.Label(self, text="Aguardando adversário")
+        
 
-        # funções
+        def enviarTentativa():
+          self.turno = 'adversario'
+          clientMessage = tentativa.get()
+          self.pacote = { "tentativa": clientMessage }
+          data = json.dumps(self.pacote).encode('utf-8')
+          self.socket.send(data) 
+          btn_enviar['state'] = t.DISABLED
+
+        # componentes do layout
+        btn_enviar = t.Button(self, text="Chutar", width=20, command=enviarTentativa)
+        tiros_label = t.Label(self, text="Tiros: "+str(self.tiros))
+        moscas_label =  t.Label(self, text="Moscas: "+str(self.moscas))
+        
+        class jogo(t.Frame):
+          def __init__(self):
+            t.Frame.__init__(self)
+            sequencia_label.grid(column=0, row=0, padx=60, pady=5)
+            adversario_label.grid(column=0, row=1, padx=60, pady=5)
+            mensagem.grid(column=0, row=2, padx=60, pady=5)
+            tentativa.insert(0,"")
+            tentativa.grid(column=0, row=3, padx=60, pady=10)
+            btn_enviar.grid(column=0, row=4,padx=10, pady=10)
+            tiros_label.grid(column=0, row=6, padx=60, pady=5)
+            moscas_label.grid(column=0, row=7, padx=60, pady=5)
+    
+
+        def atualiza_layout():
+          self.layout.grid_forget()
+          self.layout = jogo()
+          self.layout.grid(column=0, row=0, padx=20, pady=20)
+        
+        atualiza_layout()
+            
+
+        def fim_jogo():
+          if self.moscas == 3:
+            mensagem.configure(text="Você ganhou!")
+          else:
+            mensagem.configure(text="Você perdeu...")
+          btn_enviar.configure(text="Novo jogo")
+          btn_enviar['state'] = t.NORMAL
+
         
         def calcularTirosEMoscas(tentativa):
           numeros = list(tentativa)
@@ -63,44 +105,10 @@ class Game(t.Frame):
           self.pacote = { "tiros":tiros, "moscas": moscas }
           data = json.dumps(self.pacote).encode('utf-8')
           self.socket.send(data) 
+          if moscas == 3:
+              fim_jogo()     
 
-        class jogo(t.Frame):
-          def __init__(self):
-            t.Frame.__init__(self)
-            sequencia_label.grid(column=0, row=0, padx=60, pady=5)
-            adversario_label.grid(column=0, row=1, padx=60, pady=5)
-            chute_label.grid(column=0, row=2, padx=60, pady=5)
-            tentativa.insert(0,"")
-            tentativa.grid(column=0, row=3, padx=60, pady=10)
-            btn_enviar.grid(column=0, row=4,padx=10, pady=10)
-            tiros_label.grid(column=0, row=6, padx=60, pady=5)
-            moscas_label.grid(column=0, row=7, padx=60, pady=5)
-    
-
-        def atualiza_layout():
-          self.layout.grid_forget()
-          self.layout = jogo()
-          self.layout.grid(column=0, row=0, padx=20, pady=20)
-
-        def enviarTentativa():
-          self.turno = 'adversario'
-          clientMessage = tentativa.get()
-          self.pacote = { "tentativa": clientMessage }
-          data = json.dumps(self.pacote).encode('utf-8')
-          self.socket.send(data) 
-          btn_enviar['state'] = t.DISABLED
-          atualiza_layout()
-
-        # componentes do layout
-        btn_enviar = t.Button(self, text="Chutar", width=20, command=enviarTentativa)
-        tiros_label = t.Label(self, text="Tiros: "+str(self.tiros))
-        moscas_label =  t.Label(self, text="Moscas: "+str(self.moscas))
-
-        self.layout.grid(column=0, row=0, padx=60, pady=5)
-
-        
-      
-
+     
         # função que executa em loop escutando mensagens do servidor
         def recebeMsg():
           while True:
@@ -110,21 +118,24 @@ class Game(t.Frame):
               self.turno = pacote_recebido['turno']
               if self.turno == 'adversario':
                 btn_enviar['state'] = t.DISABLED
-              atualiza_layout()
+
+            if 'tiros' in pacote_recebido:
+              self.tiros = pacote_recebido['tiros']
+              tiros_label.configure(text="Tiros: "+str(self.tiros))
+
+            if 'moscas' in pacote_recebido:
+              self.moscas = pacote_recebido['moscas']
+              if self.moscas == 3:
+                self.layout.grid_forget()
+                fim_jogo()
+              moscas_label.configure(text="Moscas: "+str(self.moscas))
+            
             if 'tentativa' in pacote_recebido:
               self.turno = 'jogador'
               btn_enviar['state'] = t.NORMAL
               adversario_label.configure(text="Seu adversário chutou: "+pacote_recebido['tentativa'])
               calcularTirosEMoscas(pacote_recebido['tentativa'])
-              atualiza_layout()
-            if 'tiros' in pacote_recebido:
-              self.tiros = pacote_recebido['tiros']
-              tiros_label.configure(text="Tiros: "+str(self.tiros))
-              atualiza_layout()
-            if 'moscas' in pacote_recebido:
-              self.moscas = pacote_recebido['moscas']
-              moscas_label.configure(text="Moscas: "+str(self.moscas))
-              atualiza_layout()
+
             if 'GAME_OVER' in pacote_recebido:
                 print('vai encerrar o socket cliente!')
                 self.socket.close()
