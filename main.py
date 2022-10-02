@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     root.geometry("400x400")
     
-    menu = Menu(root, singleplayer, multiplayer, config)
+    menu = Menu(root, singleplayer, multiplayer)
     game = Game(menu)
     menu.grid()
 

@@ -37,7 +37,7 @@ class Game(t.Frame):
         tentativa = t.Entry(self, width=40)
         
 
-        def enviarTentativa():
+        def enviar_tentativa():
           self.turno = 'adversario'
           clientMessage = tentativa.get()
           self.pacote = { "tentativa": clientMessage }
@@ -46,7 +46,7 @@ class Game(t.Frame):
           btn_enviar['state'] = t.DISABLED
 
         # componentes do layout
-        btn_enviar = t.Button(self, text="Chutar", width=20, command=enviarTentativa)
+        btn_enviar = t.Button(self, text="Chutar", width=20, command=enviar_tentativa)
         tiros_label = t.Label(self, text="Tiros: "+str(self.tiros))
         moscas_label =  t.Label(self, text="Moscas: "+str(self.moscas))
         
@@ -62,6 +62,12 @@ class Game(t.Frame):
             tiros_label.grid(column=0, row=6, padx=60, pady=5)
             moscas_label.grid(column=0, row=7, padx=60, pady=5)
     
+        def enviar_feedback(tiros, moscas):
+          self.pacote = { "tiros":tiros, "moscas": moscas }
+          data = json.dumps(self.pacote).encode('utf-8')
+          self.socket.send(data) 
+          if moscas == 3:
+              fim_jogo()  
 
         def atualiza_layout():
           self.layout.grid_forget()
@@ -69,18 +75,32 @@ class Game(t.Frame):
           self.layout.grid(column=0, row=0, padx=20, pady=20)
         
         atualiza_layout()
+
+        def inicia_novo_jogo():
+          self.minha_sequencia = str(randint(0, 9))+str(randint(0, 9))+str(randint(0, 9))
+          if self.turno == 'adversario':
+              btn_enviar['state'] = t.DISABLED
+          else:
+            btn_enviar['state'] = t.NORMAL
+          self.tiros = 0
+          self.moscas = 0
+          mensagem.configure(text="Chutar sequência de três números: ")
+          btn_enviar.configure(text="Chutar", command=enviar_tentativa)
+
             
 
         def fim_jogo():
           if self.moscas == 3:
             mensagem.configure(text="Você ganhou!")
+            self.turno = 'jogador'
           else:
             mensagem.configure(text="Você perdeu...")
-          btn_enviar.configure(text="Novo jogo")
+            self.turno = 'adversario'
+          btn_enviar.configure(text="Novo jogo", command=inicia_novo_jogo)
           btn_enviar['state'] = t.NORMAL
 
         
-        def calcularTirosEMoscas(tentativa):
+        def calcular_Tiros_E_Moscas(tentativa):
           numeros = list(tentativa)
           sequencia = list(self.minha_sequencia)
           quantidade_tiros = 0
@@ -99,18 +119,12 @@ class Game(t.Frame):
                     tiros.append(numero)
                     quantidade_tiros +=1
 
-          enviarFeedback(quantidade_tiros, quantidade_moscas)
-        
-        def enviarFeedback(tiros, moscas):
-          self.pacote = { "tiros":tiros, "moscas": moscas }
-          data = json.dumps(self.pacote).encode('utf-8')
-          self.socket.send(data) 
-          if moscas == 3:
-              fim_jogo()     
+          enviar_feedback(quantidade_tiros, quantidade_moscas)
+           
 
      
         # função que executa em loop escutando mensagens do servidor
-        def recebeMsg():
+        def recebe_Msg():
           while True:
             data = self.socket.recv(BUFFER_SIZE)
             pacote_recebido = json.loads(data)
@@ -134,13 +148,13 @@ class Game(t.Frame):
               self.turno = 'jogador'
               btn_enviar['state'] = t.NORMAL
               adversario_label.configure(text="Seu adversário chutou: "+pacote_recebido['tentativa'])
-              calcularTirosEMoscas(pacote_recebido['tentativa'])
+              calcular_Tiros_E_Moscas(pacote_recebido['tentativa'])
 
             if 'GAME_OVER' in pacote_recebido:
                 print('vai encerrar o socket cliente!')
                 self.socket.close()
 
-        recvThread = Thread(target=recebeMsg)
+        recvThread = Thread(target=recebe_Msg)
         recvThread.daemon = True
         recvThread.start()
       
