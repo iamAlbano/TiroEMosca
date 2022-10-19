@@ -2,7 +2,8 @@ import functools
 import tkinter as t
 from menu import Menu
 from tela import Tela
-from game import Game
+from singleplayer import Singleplayer
+from multiplayer import Game
 import tcp_cliente
 import server
 import sys
@@ -19,21 +20,15 @@ PORT = 20000        # Porta utilizada pelo servidor
 # inicializando telas da aplicaçao
 singleplayer = []
 multiplayer = []
-config = []
-hosting = []
-game = []
 
-def host_game():
-    game_status = 'hosting'
-    tela.muda_tela(hosting)
-    start_host()
+tela_singleplayer = []
+tela_multiplayer = []
 
-def start_host():
-    # subprocess.call("tcp_server.py", shell=True)
-    exec(open("tcp_server.py").read())
+def singleplayer_game():
+    tela.muda_tela(singleplayer)
 
-def enter_game():
-    tela.muda_tela(game)
+def multiplayer_game():
+    tela.muda_tela(multiplayer)
 
 def voltar_menu():
     tela.muda_tela(tela)
@@ -41,37 +36,26 @@ def voltar_menu():
 # opções que aparecem em cada tela da aplicação
 singleplayer_options = [
     {'text': 'Escolha seu modo de jogo', 'type': 'label', 'column':0, 'row':1 },
-    {'text': 'Jogar sozinho', 'type': 'button', 'column':0, 'row':2, 'action':tcp_cliente.main },
-    {'text': 'VS CPU', 'type': 'button', 'column':0, 'row':3, 'action':tcp_cliente.main },
+    {'text': 'Jogar sozinho', 'type': 'button', 'column':0, 'row':2, 'action':singleplayer_game},
+    {'text': 'VS CPU', 'type': 'button', 'column':0, 'row':3, 'action':singleplayer_game },
 ]
 multiplayer_options = [
-    {'text': 'Escolha sua conexão', 'type': 'label', 'column':0, 'row':0 },
-    {'text': 'Iniciar jogo', 'type': 'button', 'column':0, 'row':1, 'action':enter_game},
-    # {'text': 'HOST', 'type': 'button', 'column':0, 'row':2, 'action':host_game},
+    {'text': 'Multiplayer', 'type': 'label', 'column':0, 'row':0 },
+    {'text': 'Iniciar jogo', 'type': 'button', 'column':0, 'row':1, 'action':multiplayer_game},
 ]
 
-hosting_options = [
-    {'text': "Host criado no IP e porta:"+str(HOST)+":"+str(PORT), 'type': 'label', 'column':0, 'row':1 },
-    {'text': 'Cancelar', 'type': 'button', 'column':0, 'row':2, 'action':voltar_menu},
-]
 
-config_options = [
-    {'text': 'HOST', 'type': 'entry', 'column':0, 'row':1, 'action':enter_game},
-    {'text': 'Porta', 'type': 'entry', 'column':0, 'row':2, 'action':enter_game},
-    {'text': 'Salvar', 'type': 'button', 'column':0, 'row':3, 'action':enter_game},
-]
 # aplicando opções as telas da aplicação
-singleplayer = Tela(root, 'SinglePlayer', singleplayer_options)
-multiplayer = Tela(root, 'Multiplayer', multiplayer_options)  
-config = Tela(root, 'Configurações', config_options) 
-hosting = Tela(root, "Aguardando adversário", hosting_options)
+tela_singleplayer = Tela(root, 'SinglePlayer', singleplayer_options)
+tela_multiplayer = Tela(root, 'Multiplayer', multiplayer_options)  
 
 if __name__ == '__main__':
 
     root.geometry("400x400")
     
-    menu = Menu(root, singleplayer, multiplayer)
-    game = Game(menu)
+    menu = Menu(root, tela_singleplayer, tela_multiplayer)
+    singleplayer = Singleplayer(menu)
+    multiplayer = Game(menu)
     menu.grid()
 
     root.mainloop()
