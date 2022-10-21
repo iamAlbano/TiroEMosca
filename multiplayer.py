@@ -78,6 +78,7 @@ class Game(t.Frame):
 
         def inicia_novo_jogo():
           self.minha_sequencia = str(randint(0, 9))+str(randint(0, 9))+str(randint(0, 9))
+          sequencia_label.configure(text="A sua sequência é: "+self.minha_sequencia)
           if self.turno == 'adversario':
               btn_enviar['state'] = t.DISABLED
           else:
