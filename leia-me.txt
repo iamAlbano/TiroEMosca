@@ -1,9 +1,0 @@
------------------------Trabalho de redes-------------------------
-
-Para executar o programa, primeiro ative o servidor com o comando
-
-python server.py
-
-Com o servidor ligado, basta executar o arquivo main com o comando
-
-python main.py
