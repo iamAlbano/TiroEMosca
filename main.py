@@ -4,7 +4,6 @@ from menu import Menu
 from tela import Tela
 from singleplayer import Singleplayer
 from multiplayer import Game
-import tcp_cliente
 import server
 import sys
 import subprocess

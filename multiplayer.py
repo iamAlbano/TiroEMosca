@@ -27,6 +27,9 @@ class Game(t.Frame):
       msg = t.Label(self, text="Aguardando adversário")
       self.layout = msg
 
+      self.vitorias = 0
+      self.derrotas = 0
+
       try:
         t.Frame.__init__(self)
 
@@ -35,6 +38,7 @@ class Game(t.Frame):
         adversario_label = t.Label(self, text="Seu adversário chutou: ")
         mensagem = t.Label(self, text="Chutar sequência de três números: ")
         tentativa = t.Entry(self, width=40)
+        placar = t.Label(self, text="Vitórias: "+str(self.vitorias)+"  Derrotas: "+str(self.derrotas))
         
 
         def enviar_tentativa():
@@ -61,6 +65,7 @@ class Game(t.Frame):
             btn_enviar.grid(column=0, row=4,padx=10, pady=10)
             tiros_label.grid(column=0, row=6, padx=60, pady=5)
             moscas_label.grid(column=0, row=7, padx=60, pady=5)
+            placar.grid(column=0, row=8, padx=60, pady=5)
     
         def enviar_feedback(tiros, moscas):
           self.pacote = { "tiros":tiros, "moscas": moscas }
@@ -94,9 +99,12 @@ class Game(t.Frame):
           if self.moscas == 3:
             mensagem.configure(text="Você ganhou!")
             self.turno = 'jogador'
+            self.vitorias +=1
           else:
             mensagem.configure(text="Você perdeu...")
             self.turno = 'adversario'
+            self.derrotas +=1
+          placar.configure(text="Vitórias: "+str(self.vitorias)+"  Derrotas: "+str(self.derrotas))
           btn_enviar.configure(text="Novo jogo", command=inicia_novo_jogo)
           btn_enviar['state'] = t.NORMAL
 
@@ -158,17 +166,6 @@ class Game(t.Frame):
         recvThread = Thread(target=recebe_Msg)
         recvThread.daemon = True
         recvThread.start()
-      
-
-        # def sair_jogo():
-        #   self.pacote = { "GAME_OVER":True }
-        #   data = json.dumps(self.pacote).encode('utf-8')
-        #   self.socket.send(data) 
-        #   self.grid_forget()
-        #   self.parent.muda_tela(self)
-
-        # btn_voltar = t.Button(self, text="Voltar", width=20, command=sair_jogo)
-        # btn_voltar.grid(column=0, row=8, padx=60, pady=5)
           
         
       except Exception as error:
